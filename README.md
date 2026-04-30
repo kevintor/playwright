@@ -210,6 +210,81 @@ Every test screenshot is saved to `screenshots/<test_name>_<sys_id>.png`. On fai
 
 ## CI/CD — GitHub Actions
 
+> ⚠️ **Note:** The GitHub Actions workflow (`.github/workflows/tests.yml`) could not be auto-pushed due to token scope restrictions. Copy it manually or add `workflow` scope to your token, then push from a local clone.
+>
+> **Raw workflow file:** https://raw.githubusercontent.com/kevintor/playwright/main/.github/workflows/tests.yml
+
+### Manual setup (one-time)
+
+```bash
+# Clone the repo
+git clone https://github.com/kevintor/playwright.git
+cd playwright
+
+# Create workflows directory and add the workflow
+mkdir -p .github/workflows
+# Copy tests.yml content from the URL above, then:
+git add .github/workflows/tests.yml
+git commit -m "Add GitHub Actions workflow"
+git push
+```
+
+### Workflow file content (`.github/workflows/tests.yml`)
+
+```yaml
+name: ServiceNow Playbook GUI Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  playwright-tests:
+    name: Run Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install playwright pytest pytest-html
+          playwright install --with-deps chromium
+
+      - name: Run tests
+        env:
+          SN_INSTANCE: ${{ secrets.SN_INSTANCE }}
+          SN_USER: ${{ secrets.SN_USER }}
+          SN_PASS: ${{ secrets.SN_PASS }}
+          SN_MFA_TOKEN: ${{ secrets.SN_MFA_TOKEN }}
+        run: |
+          pytest tests/ --html=report.html --self-contained-html -v
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failure-screenshots
+          path: screenshots/*.png
+          retention-days: 7
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: report.html
+          retention-days: 14
+```
+
 ### Secrets required (Settings → Secrets → Actions)
 
 | Secret | Description |
