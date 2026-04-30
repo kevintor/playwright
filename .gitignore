@@ -1,0 +1,34 @@
+# Byte-compiled / optimized Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+
+# Environment files (contain secrets)
+.env
+.env.local
+
+# Playwright
+.playwright/
+playwright-report/
+playwright/.cache/
+
+# Test outputs
+screenshots/*.png
+*.log
+.pytest_cache/
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
